@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Buddy Finder</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --background: #f3f4f6;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('bg.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        p {
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .output {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .output img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        #outputText {
+            font-size: 1.125rem;
+            color: var(--text);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Buddy Finder</h1>
+        <p>Describe your ideal dog, select the desired output language, and find your perfect buddy!</p>
+        
+        <div>
+            <label for="draft">Describe your ideal dog:</label>
+            <textarea id="draft" rows="4" placeholder="e.g., I want a small, playful dog that's good with kids."></textarea>
+        </div>
+
+        <div>
+            <label for="language">Choose Desired Output Language:</label>
+            <select id="language">
+                <option value="english">English</option>
+                <option value="dutch">Dutch</option>
+            </select>
+        </div>
+
+        <div>
+            <button onclick="findMyBuddy()">Find My Buddy</button>
+        </div>
+
+        <div class="output" id="output">
+            <img id="petImage" src="cutedog.jpg" alt="Pet Image" />
+            <p id="outputText">Your result will appear here.</p>
+        </div>
+    </div>
+
+    <script>
+        async function findMyBuddy() {
+            const preferences = document.getElementById('draft').value;
+            const language = document.getElementById('language').value;
+
+            if (!preferences) {
+                document.getElementById('outputText').textContent = "Please enter your preferences!";
+                document.getElementById('petImage').src = "cutedog.jpg";
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: preferences, language: language })
+                });
+
+                const result = await response.json();
+                console.log("API Response:", result); // Debugging
+
+                // Update frontend elements with response data
+                document.getElementById('outputText').textContent = result.generated_text;
+                document.getElementById('petImage').src = result.image_url || "cutedog.jpg";
+            } catch (error) {
+                console.error('Error connecting to the server:', error);
+                document.getElementById('outputText').textContent = "Error connecting to the server.";
+                document.getElementById('petImage').src = "cutedog.jpg";
+            }
+        }
+    </script>
+</body>
+</html>
+
